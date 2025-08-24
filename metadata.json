@@ -1,0 +1,5 @@
+{
+  "name": "my-telemon-frontend",
+  "description": "一个用于配置和管理 Telegram 频道监控服务的 Web 界面。您可以设置目标频道、关键词、API 凭证和 Telegram Bot 通知。所有配置都保存在您的浏览器本地。",
+  "requestFramePermissions": []
+}
