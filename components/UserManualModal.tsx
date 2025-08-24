@@ -24,13 +24,13 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ onClose }) => {
         
         <div className="flex-grow overflow-y-auto p-6 space-y-6 text-gray-700 dark:text-gray-300">
           <p>
-            欢迎使用 Telemon！本应用是一个功能强大的前端控制台，用于配置和管理后端的 Telegram 监控服务。所有敏感信息（API凭证、Bot配置）均由服务器端统一管理，确保安全性。
+            欢迎使用 My Telemon Frontend！这是一个基于 React 19 构建的现代化 Telegram 频道监控前端控制台。本应用采用安全的分离式架构设计，通过直观的 Web 界面帮助您轻松配置和管理多个频道的实时监控任务。所有敏感信息（API凭证、Bot配置）均由后端服务统一管理，前端专注于提供优秀的用户体验和业务逻辑。支持多种监控状态、智能操作控制和响应式界面设计。
           </p>
 
           <section>
             <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">核心概念</h3>
             <p className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 p-4 rounded-lg">
-                本应用分为两部分：您正在使用的 **前端控制台** 和一个需要您自己部署的 **Python 后端服务**。前端负责监控配置管理，而后端则执行实际的监控任务和通知发送。所有敏感信息（API凭证、Bot Token）都在后端统一配置，前端只需提供业务逻辑参数。
+                本应用分为两部分：您正在使用的 **前端控制台** 和一个需要您自己部署的 **Python 后端服务**。前端负责监控配置管理和用户界面交互，而后端则执行实际的监控任务和通知发送。采用这种分离式架构设计，所有敏感信息（API凭证、Bot Token）都在后端统一配置和管理，大大提升了系统的安全性，降低了凭证泄露的风险。
              </p>
           </section>
 
@@ -60,7 +60,8 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ onClose }) => {
           <section>
             <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">前端使用指南</h3>
              <ol className="list-decimal list-inside space-y-4">
-              <li><strong>检查服务器状态:</strong> 首次打开应用时，会自动检查服务器配置状态。确保显示"服务器配置就绪"后再创建监控。</li>
+              <li><strong>配置后端服务地址:</strong> 首次打开应用时，会自动弹出后端服务地址配置窗口。输入您的后端服务地址（如：<code>http://127.0.0.1:8080</code>），配置信息将安全保存在本地。</li>
+              <li><strong>检查服务器状态:</strong> 配置后端地址后，应用会自动检查服务器配置状态。确保显示"服务器配置就绪"后再创建监控任务。</li>
               <li><strong>新建监控:</strong> 点击主界面的"新建监控"按钮（仅在服务器配置就绪时可用）。</li>
               <li>
                 <strong>填写监控配置:</strong>
@@ -76,20 +77,32 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ onClose }) => {
                       <li><code>channel_username</code> (纯用户名)</li>
                     </ul>
                   </li>
-                  <li><strong>关键词 (可选):</strong> 输入您希望匹配的关键词，每输入一个后按 Enter 键添加。如果留空，则会监控频道的所有消息。</li>
+                  <li><strong>关键词过滤 (可选):</strong> 输入您希望匹配的关键词，每输入一个后按 Enter 键添加。如果留空，则会监控频道的所有消息。</li>
                   <li><strong>正则表达式:</strong> 开启此选项可以使用正则表达式进行更复杂的关键词匹配。</li>
                 </ul>
               </li>
-               <li><strong>保存与管理:</strong> 点击"保存"以启动监控。在主界面，您可以使用卡片上的开关来实时地启动或暂停监控任务。</li>
+               <li>
+                <strong>监控状态管理:</strong> 保存配置后，可在主界面查看监控状态，系统支持以下状态：
+                <ul className="list-disc list-inside ml-6 mt-2 space-y-2 text-gray-600 dark:text-gray-400">
+                  <li><strong>🟢 运行中 (running):</strong> 监控活跃，正在实时检测消息，可执行停止操作</li>
+                  <li><strong>⚪ 已停止 (stopped):</strong> 监控暂停，不会检测消息，可执行恢复操作</li>
+                  <li><strong>🔵 启动中 (starting):</strong> 状态转换中，请等待操作完成</li>
+                  <li><strong>🔴 错误状态 (error):</strong> 出现异常，可尝试重新启动或检查配置</li>
+                </ul>
+                <p className="mt-2 ml-6 text-sm text-gray-600 dark:text-gray-400">
+                  系统根据当前状态动态显示可用操作按钮，删除操作需要二次确认防止误操作。
+                </p>
+              </li>
+              <li><strong>响应式界面:</strong> 桌面端显示表格视图，移动端自动切换为卡片视图，操作更加便捷。</li>
             </ol>
           </section>
 
           <section>
             <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">安全说明</h3>
             <div className="p-4 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-lg">
-              <p className="font-semibold mb-2">🔒 增强的安全性</p>
+              <p className="font-semibold mb-2">🔒 分离式安全架构</p>
               <p className="text-sm">
-                所有敏感信息（Telegram API 凭证、Bot Token、通知目标）现在都由服务器端统一管理，前端不再需要处理这些敏感数据。这大大提高了系统的安全性，降低了凭证泄露的风险。
+                采用前后端分离的安全架构设计：所有敏感信息（Telegram API 凭证、Bot Token、通知目标）完全由后端服务统一管理，前端只处理业务逻辑和用户界面交互。这种设计大大提高了系统的安全性，有效降低了凭证泄露的风险，同时确保了数据的一致性和可靠性。
               </p>
             </div>
           </section>

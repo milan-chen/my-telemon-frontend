@@ -1,7 +1,8 @@
 {
   "name": "my-telemon-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "一个基于 React 19 构建的现代化 Telegram 频道监控前端控制台",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,5 +17,16 @@
     "@types/node": "^22.14.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
-  }
+  },
+  "keywords": [
+    "telegram",
+    "monitor",
+    "react",
+    "typescript",
+    "vite",
+    "frontend",
+    "web-app"
+  ],
+  "author": "hengyun",
+  "license": "MIT"
 }

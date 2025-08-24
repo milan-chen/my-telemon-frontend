@@ -1,5 +1,5 @@
 {
   "name": "my-telemon-frontend",
-  "description": "一个用于配置和管理 Telegram 频道监控服务的 Web 界面。您可以设置目标频道、关键词、API 凭证和 Telegram Bot 通知。所有配置都保存在您的浏览器本地。",
+  "description": "一个基于 React 19 构建的现代化 Telegram 频道监控前端控制台。通过直观的 Web 界面，轻松配置和管理多个频道的实时监控任务。采用安全分离式架构，敏感信息由后端统一管理。",
   "requestFramePermissions": []
 }
