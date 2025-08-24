@@ -6,5 +6,9 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, '.'),
     }
+  },
+  server: {
+    // 开发服务器配置
+    port: 3000,
   }
 });

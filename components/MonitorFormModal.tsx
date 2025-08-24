@@ -3,12 +3,6 @@ import { MonitorConfig } from '../types';
 import KeywordInput from './KeywordInput';
 import { CloseIcon } from './icons/CloseIcon';
 import { ChannelIcon } from './icons/ChannelIcon';
-import { KeyIcon } from './icons/KeyIcon';
-import { AtSymbolIcon } from './icons/AtSymbolIcon';
-import { LinkIcon } from './icons/LinkIcon';
-import { BotIcon } from './icons/BotIcon';
-import { UserCircleIcon } from './icons/UserCircleIcon';
-
 
 interface MonitorFormModalProps {
   monitor: MonitorConfig | null;
@@ -21,14 +15,7 @@ const MonitorFormModal: React.FC<MonitorFormModalProps> = ({ monitor, onSave, on
     const baseConfig: Omit<MonitorConfig, 'id'> = {
         channel: '',
         keywords: [],
-        apiId: '',
-        apiHash: '',
         isEnabled: true,
-        backendUrl: '',
-        telegramBotConfig: {
-            botToken: '',
-            chatId: '',
-        },
         useRegex: false,
     };
 
@@ -46,19 +33,8 @@ const MonitorFormModal: React.FC<MonitorFormModalProps> = ({ monitor, onSave, on
   });
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({ ...prev, [name]: type === 'number' ? parseInt(value) : value }));
-  }, []);
-
-  const handleTelegramBotChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      telegramBotConfig: {
-        ...prev.telegramBotConfig,
-        [name]: value,
-      },
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   }, []);
 
   const handleKeywordsChange = useCallback((newKeywords: string[]) => {
@@ -70,7 +46,7 @@ const MonitorFormModal: React.FC<MonitorFormModalProps> = ({ monitor, onSave, on
     onSave(formData);
   };
 
-  const renderInput = (id: string, label: string, type: string, value: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, icon: React.ReactNode, placeholder = '', required = true) => (
+  const renderInput = (id: string, label: string, type: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, icon: React.ReactNode, placeholder = '', required = true) => (
     <div>
       <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       <div className="relative">
@@ -94,7 +70,7 @@ const MonitorFormModal: React.FC<MonitorFormModalProps> = ({ monitor, onSave, on
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4" onClick={onClose}>
       <div 
-        className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all duration-300 ease-in-out scale-95 animate-scale-in"
+        className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all duration-300 ease-in-out scale-95 animate-scale-in"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
@@ -106,19 +82,18 @@ const MonitorFormModal: React.FC<MonitorFormModalProps> = ({ monitor, onSave, on
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-8">
-           {/* Section 0: Backend URL */}
+        <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-6 space-y-6">
+          {/* 监控配置部分 */}
           <section>
-             <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">后端服务</h3>
-             {renderInput('backendUrl', '后端服务地址', 'url', formData.backendUrl, handleChange, <LinkIcon />, 'http://127.0.0.1:8080')}
-          </section>
-
-          {/* Section 1: Telegram Channel */}
-          <section>
-            <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Telegram 配置</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {renderInput('channel', '目标频道', 'text', formData.channel, handleChange, <ChannelIcon />, '@频道名称 或 加入链接')}
-              <div className="md:col-span-2">
+            <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">监控配置</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              配置您要监控的 Telegram 频道和关键词。所有敏感信息（API 凭证、Bot 通知）已由服务器端统一管理。
+            </p>
+            
+            <div className="space-y-4">
+              {renderInput('channel', '目标频道', 'text', formData.channel, handleChange, <ChannelIcon />, '@频道名称 或 频道链接')}
+              
+              <div>
                 <div className="flex justify-between items-center mb-1">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">关键词 (可选)</label>
                     <div className="flex items-center">
@@ -139,28 +114,10 @@ const MonitorFormModal: React.FC<MonitorFormModalProps> = ({ monitor, onSave, on
                     </div>
                 </div>
                 <KeywordInput value={formData.keywords} onChange={handleKeywordsChange} />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  留空表示监控频道的所有消息。设置关键词可以过滤只关注特定内容的消息。
+                </p>
               </div>
-            </div>
-          </section>
-
-          {/* Section 2: API Credentials */}
-          <section>
-            <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">API 凭证</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {renderInput('apiId', 'API ID', 'text', formData.apiId, handleChange, <AtSymbolIcon />, '你的 Telegram API ID')}
-                {renderInput('apiHash', 'API Hash', 'password', formData.apiHash, handleChange, <KeyIcon />, '你的 Telegram API Hash')}
-            </div>
-          </section>
-
-          {/* Section 3: Telegram Bot Configuration */}
-          <section>
-            <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Telegram Bot 通知</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                配置您的 Telegram Bot 以接收实时通知。请参考用户手册获取详细设置方法。
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {renderInput('botToken', 'Bot Token', 'password', formData.telegramBotConfig.botToken, handleTelegramBotChange, <BotIcon />, '从 @BotFather 获取的 Token')}
-              {renderInput('chatId', 'Chat ID', 'text', formData.telegramBotConfig.chatId, handleTelegramBotChange, <UserCircleIcon />, '您的个人或群组 ID')}
             </div>
           </section>
         </form>

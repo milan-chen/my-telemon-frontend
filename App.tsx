@@ -1,18 +1,23 @@
 import React, { useState, useCallback } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { MonitorConfig } from './types';
+import { MonitorConfig, ServerConfigStatus } from './types';
 import Header from './components/Header';
 import MonitorCard from './components/MonitorCard';
 import MonitorFormModal from './components/MonitorFormModal';
 import UserManualModal from './components/UserManualModal';
+import ServerStatusBanner from './components/ServerStatusBanner';
+import BackendUrlModal from './components/BackendUrlModal';
 import { PlusIcon } from './components/icons/PlusIcon';
 
 const App: React.FC = () => {
   const [monitors, setMonitors] = useLocalStorage<MonitorConfig[]>('telemon-configs', []);
+  const [backendUrl, setBackendUrl] = useLocalStorage<string>('telemon-backend-url', '');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMonitor, setEditingMonitor] = useState<MonitorConfig | null>(null);
   const [isManualOpen, setIsManualOpen] = useState(false);
+  const [isBackendUrlModalOpen, setIsBackendUrlModalOpen] = useState(!backendUrl);
   const [syncingMonitors, setSyncingMonitors] = useState<Set<string>>(new Set());
+  const [serverStatus, setServerStatus] = useState<ServerConfigStatus | null>(null);
 
   const handleOpenModal = useCallback((monitor?: MonitorConfig) => {
     setEditingMonitor(monitor || null);
@@ -26,23 +31,40 @@ const App: React.FC = () => {
   
   const handleOpenManual = useCallback(() => setIsManualOpen(true), []);
   const handleCloseManual = useCallback(() => setIsManualOpen(false), []);
+  
+  const handleOpenBackendUrlModal = useCallback(() => setIsBackendUrlModalOpen(true), []);
+  const handleCloseBackendUrlModal = useCallback(() => {
+    if (backendUrl) { // 只有在已有后端地址时才可以关闭
+      setIsBackendUrlModalOpen(false);
+    }
+  }, [backendUrl]);
+  
+  const handleSaveBackendUrl = useCallback((url: string) => {
+    setBackendUrl(url);
+    setIsBackendUrlModalOpen(false);
+  }, [setBackendUrl]);
 
-  const apiRequest = async (url: string, method: string, body: any) => {
+  const apiRequest = async (endpoint: string, method: string, body?: any) => {
+    if (!backendUrl) {
+      throw new Error('后端服务地址未配置');
+    }
+    
+    const url = `${backendUrl}${endpoint}`;
     const response = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: body ? JSON.stringify(body) : undefined,
     });
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: '请求失败，请检查后端服务日志' }));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({ detail: '请求失败，请检查后端服务日志' }));
+      throw new Error(errorData.detail || errorData.message || `HTTP error! status: ${response.status}`);
     }
     return response.json();
   };
 
   const getFriendlyErrorMessage = (error: unknown): string => {
     if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      return '网络请求失败 (Failed to fetch)。\n\n请检查以下几点：\n1. 确保您的 Python 后端服务正在运行。\n2. 确认您在表单中填写的 "后端服务地址" (例如 http://127.0.0.1:8080) 是否正确无误。\n3. 检查浏览器开发者控制台 (F12) 获取更多信息。';
+      return '网络请求失败 (Failed to fetch)。\n\n请检查以下几点：\n1. 确保您的 Python 后端服务正在运行。\n2. 确认后端服务地址配置正确。\n3. 检查浏览器开发者控制台 (F12) 获取更多信息。';
     }
     if (error instanceof Error) {
       return error.message;
@@ -51,15 +73,29 @@ const App: React.FC = () => {
   };
   
   const handleSaveMonitor = useCallback(async (monitor: MonitorConfig) => {
+    // 检查服务器配置状态
+    if (!serverStatus?.all_ready) {
+      alert('服务器配置不完整，请先完成服务器端配置后再创建监控。');
+      return;
+    }
+
     const isEditing = monitors.some(m => m.id === monitor.id);
     setSyncingMonitors(prev => new Set(prev).add(monitor.id));
     try {
+      // 构造符合新 API 的请求体
+      const requestBody = {
+        id: monitor.id,
+        channel: monitor.channel,
+        keywords: monitor.keywords,
+        useRegex: monitor.useRegex
+      };
+
       // For a new or updated monitor, tell backend to start if it's enabled
       if (monitor.isEnabled) {
-        await apiRequest(`${monitor.backendUrl}/monitor/start`, 'POST', monitor);
+        await apiRequest('/monitor/start', 'POST', requestBody);
       } else if (isEditing) {
         // If an existing monitor is being saved as disabled, tell backend to stop
-        await apiRequest(`${monitor.backendUrl}/monitor/stop`, 'POST', { id: monitor.id });
+        await apiRequest('/monitor/stop', 'POST', { id: monitor.id });
       }
       
       setMonitors(prev => {
@@ -82,7 +118,7 @@ const App: React.FC = () => {
         return next;
       });
     }
-  }, [monitors, setMonitors, handleCloseModal]);
+  }, [monitors, setMonitors, handleCloseModal, serverStatus]);
 
   const handleDeleteMonitor = useCallback(async (id: string) => {
     const monitor = monitors.find(m => m.id === id);
@@ -91,7 +127,7 @@ const App: React.FC = () => {
     setSyncingMonitors(prev => new Set(prev).add(id));
     try {
       // Always try to stop backend service on delete
-      await apiRequest(`${monitor.backendUrl}/monitor/stop`, 'POST', { id });
+      await apiRequest('/monitor/stop', 'POST', { id });
       setMonitors(prev => prev.filter(m => m.id !== id));
     } catch (error) {
        // We still remove from frontend even if backend fails, maybe backend was already down
@@ -110,14 +146,27 @@ const App: React.FC = () => {
     const monitor = monitors.find(m => m.id === id);
     if (!monitor) return;
 
+    // 检查服务器配置状态
+    if (!monitor.isEnabled && !serverStatus?.all_ready) {
+      alert('服务器配置不完整，无法启动监控。请先完成服务器端配置。');
+      return;
+    }
+
     setSyncingMonitors(prev => new Set(prev).add(id));
     const isEnabling = !monitor.isEnabled;
 
     try {
       if (isEnabling) {
-        await apiRequest(`${monitor.backendUrl}/monitor/start`, 'POST', monitor);
+        // 构造符合新 API 的请求体
+        const requestBody = {
+          id: monitor.id,
+          channel: monitor.channel,
+          keywords: monitor.keywords,
+          useRegex: monitor.useRegex
+        };
+        await apiRequest('/monitor/start', 'POST', requestBody);
       } else {
-        await apiRequest(`${monitor.backendUrl}/monitor/stop`, 'POST', { id });
+        await apiRequest('/monitor/stop', 'POST', { id });
       }
       
       setMonitors(prev =>
@@ -135,17 +184,25 @@ const App: React.FC = () => {
         return next;
       });
     }
-  }, [monitors, setMonitors]);
+  }, [monitors, setMonitors, serverStatus]);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
-      <Header onHelpClick={handleOpenManual} />
+      <Header onHelpClick={handleOpenManual} onSettingsClick={handleOpenBackendUrlModal} />
       <main className="container mx-auto p-4 md:p-8">
+        {/* 服务器状态检查横幅 */}
+        <ServerStatusBanner backendUrl={backendUrl} onStatusChange={setServerStatus} />
+        
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">监控仪表盘</h1>
           <button
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-950 transition-all duration-200 transform hover:scale-105"
+            disabled={!serverStatus?.all_ready || !backendUrl}
+            className={`flex items-center gap-2 px-4 py-2 font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-950 transition-all duration-200 transform ${
+              (serverStatus?.all_ready && backendUrl)
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 hover:scale-105' 
+                : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+            }`}
           >
             <PlusIcon />
             新建监控
@@ -173,6 +230,15 @@ const App: React.FC = () => {
         )}
       </main>
 
+      {isBackendUrlModalOpen && (
+        <BackendUrlModal
+          currentUrl={backendUrl}
+          onSave={handleSaveBackendUrl}
+          onClose={handleCloseBackendUrlModal}
+          isRequired={!backendUrl}
+        />
+      )}
+      
       {isModalOpen && (
         <MonitorFormModal
           monitor={editingMonitor}

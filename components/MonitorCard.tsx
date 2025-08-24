@@ -83,8 +83,8 @@ const MonitorCard: React.FC<MonitorCardProps> = ({ monitor, isSyncing, onEdit, o
         </div>
 
         <div className="mt-6">
-            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">通知 Chat ID</h3>
-            <p className="text-sm text-gray-700 dark:text-gray-300 truncate mt-2">{monitor.telegramBotConfig.chatId || '未配置'}</p>
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">配置状态</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mt-2">所有敏感信息由服务器端统一管理</p>
         </div>
       </div>
 
