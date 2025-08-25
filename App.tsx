@@ -25,7 +25,6 @@ const App: React.FC = () => {
   const [syncingMonitors, setSyncingMonitors] = useState<Set<string>>(new Set());
   const [serverStatus, setServerStatus] = useState<ServerConfigStatus | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
   // 当后端地址变化时，更新API服务实例
   useEffect(() => {
@@ -48,6 +47,7 @@ const App: React.FC = () => {
       const serverMonitors: MonitorWithStatus[] = statusResponse.monitors.map(monitor => ({
         id: monitor.id,
         channel: monitor.channel,
+        channelTitle: monitor.channelTitle, 
         keywords: monitor.keywords,
         useRegex: monitor.useRegex,
         isEnabled: monitor.status === 'running', // 保持兼容性
@@ -55,7 +55,6 @@ const App: React.FC = () => {
       }));
 
       setMonitors(serverMonitors);
-      setLastSyncTime(new Date());
     } catch (error) {
       console.warn('从服务器加载数据失败:', getFriendlyErrorMessage(error));
       // 加载失败时设置为空数组，避免显示过期数据
@@ -229,11 +228,6 @@ const App: React.FC = () => {
               <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
                 <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
                 <span>加载中...</span>
-              </div>
-            )}
-            {lastSyncTime && !isLoadingData && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                最后加载: {lastSyncTime.toLocaleTimeString()}
               </div>
             )}
           </div>

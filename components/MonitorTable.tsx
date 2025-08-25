@@ -2,7 +2,8 @@ import React from 'react';
 import { MonitorConfig, MonitorStatusType } from '../types';
 import { PencilIcon } from './icons/PencilIcon';
 import { TrashIcon } from './icons/TrashIcon';
-import { ChannelIcon } from './icons/ChannelIcon';
+import { QuestionMarkIcon } from './icons/QuestionMarkIcon';
+import { ChannelAvatar } from './ChannelAvatar';
 
 // 扩展MonitorConfig以包含status信息
 interface MonitorWithStatus extends MonitorConfig {
@@ -131,13 +132,24 @@ const MonitorTable: React.FC<MonitorTableProps> = ({
                     {/* 频道列 */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center">
-                          <ChannelIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                        </div>
-                        <div className="ml-3">
-                          <div className="text-sm font-semibold text-gray-900 dark:text-white" title={monitor.channel}>
-                            {monitor.channel}
+                        <ChannelAvatar 
+                          channelTitle={monitor.channelTitle}
+                          channel={monitor.channel}
+                          size="md"
+                        />
+                        <div className="ml-3 flex items-center gap-2">
+                          <div className="text-sm font-semibold text-gray-900 dark:text-white" title={monitor.channelTitle || monitor.channel}>
+                            {monitor.channelTitle || monitor.channel}
                           </div>
+                          {monitor.channelTitle && (
+                            <div className="group relative">
+                              <QuestionMarkIcon className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" />
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                                频道ID: {monitor.channel}
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -232,13 +244,26 @@ const MonitorTable: React.FC<MonitorTableProps> = ({
                 {/* 移动端顶部行：频道名称和状态切换 */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center flex-1 min-w-0">
-                    <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center">
-                      <ChannelIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                    </div>
+                    <ChannelAvatar 
+                      channelTitle={monitor.channelTitle}
+                      channel={monitor.channel}
+                      size="md"
+                    />
                     <div className="ml-3 flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate" title={monitor.channel}>
-                        {monitor.channel}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate flex-1" title={monitor.channelTitle || monitor.channel}>
+                          {monitor.channelTitle || monitor.channel}
+                        </h3>
+                        {monitor.channelTitle && (
+                          <div className="group relative flex-shrink-0">
+                            <QuestionMarkIcon className="w-3 h-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" />
+                            <div className="absolute bottom-full right-0 mb-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                              频道ID: {monitor.channel}
+                              <div className="absolute top-full right-2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex items-center mt-1">
                         <span className={`w-2 h-2 rounded-full ${getStatusColor(monitor, isSyncing)} ${
                           isSyncing ? 'animate-pulse' : ''

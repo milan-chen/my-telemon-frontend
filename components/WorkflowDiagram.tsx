@@ -37,10 +37,10 @@ export const WorkflowDiagram: React.FC = () => {
             <div className="flex flex-col lg:flex-row justify-around items-stretch">
                 <DiagramColumn title="前端 (您的浏览器)" icon={<BrowserIcon className="w-full h-full" />}>
                     <Step number="1">
-                        在 Telemon 界面上填写后端地址、频道、API 凭证、Bot 信息等。
+                        在 Telemon 界面上填写后端地址、目标频道、关键词等监控业务配置。
                     </Step>
                     <Step number="2">
-                        点击“保存”或启用开关，将配置通过 HTTP 请求发送给您的后端服务。
+                        点击“保存”或启用开关，将业务配置通过 HTTP 请求发送给后端服务。
                     </Step>
                 </DiagramColumn>
 
@@ -48,7 +48,7 @@ export const WorkflowDiagram: React.FC = () => {
 
                 <DiagramColumn title="后端 (您的服务器)" icon={<ServerIcon className="w-full h-full" />}>
                     <Step number="3">
-                        接收前端配置，使用 Telethon 库和您的 API 凭证登录 Telegram 账号。
+                        接收前端业务配置，使用预配置的 API 凭证登录 Telegram 账号。
                     </Step>
                     <Step number="4">
                         成功登录后，加入并实时监听目标频道中的新消息。

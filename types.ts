@@ -2,6 +2,7 @@
 export interface MonitorConfig {
   id: string;
   channel: string;
+  channelTitle?: string; // 频道显示名称
   keywords: string[];
   useRegex: boolean;
   isEnabled: boolean;
@@ -34,6 +35,7 @@ export type MonitorStatusType = 'running' | 'stopped' | 'starting' | 'error';
 export interface MonitorStatus {
   id: string;
   channel: string;
+  channelTitle?: string; // 频道显示名称
   keywords: string[];
   useRegex: boolean;
   status: MonitorStatusType;

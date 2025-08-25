@@ -24,13 +24,13 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ onClose }) => {
         
         <div className="flex-grow overflow-y-auto p-6 space-y-6 text-gray-700 dark:text-gray-300">
           <p>
-            欢迎使用 My Telemon Frontend！这是一个基于 React 19 构建的现代化 Telegram 频道监控前端控制台。本应用采用安全的分离式架构设计，通过直观的 Web 界面帮助您轻松配置和管理多个频道的实时监控任务。所有敏感信息（API凭证、Bot配置）均由后端服务统一管理，前端专注于提供优秀的用户体验和业务逻辑。支持多种监控状态、智能操作控制和响应式界面设计。
+            欢迎使用 My Telemon Frontend！这是一个基于 React 19 构建的现代化 Telegram 频道监控前端控制台。通过直观的 Web 界面帮助您轻松配置和管理多个频道的实时监控任务。支持多种监控状态、智能操作控制和响应式界面设计。
           </p>
 
           <section>
             <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">核心概念</h3>
             <p className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 p-4 rounded-lg">
-                本应用分为两部分：您正在使用的 **前端控制台** 和一个需要您自己部署的 **Python 后端服务**。前端负责监控配置管理和用户界面交互，而后端则执行实际的监控任务和通知发送。采用这种分离式架构设计，所有敏感信息（API凭证、Bot Token）都在后端统一配置和管理，大大提升了系统的安全性，降低了凭证泄露的风险。
+                本应用采用前后端分离架构：您正在使用的 **前端控制台** 负责监控配置管理和用户界面交互；配套的 **Python 后端服务** 需要您自己部署，负责执行实际的监控任务和通知发送。
              </p>
           </section>
 
@@ -98,11 +98,11 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ onClose }) => {
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">安全说明</h3>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">安全架构</h3>
             <div className="p-4 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-lg">
-              <p className="font-semibold mb-2">🔒 分离式安全架构</p>
+              <p className="font-semibold mb-2">🔒 分离式设计</p>
               <p className="text-sm">
-                采用前后端分离的安全架构设计：所有敏感信息（Telegram API 凭证、Bot Token、通知目标）完全由后端服务统一管理，前端只处理业务逻辑和用户界面交互。这种设计大大提高了系统的安全性，有效降低了凭证泄露的风险，同时确保了数据的一致性和可靠性。
+                敏感信息（API 凭证、Bot Token）统一由后端服务管理，前端仅处理业务配置和界面交互，确保系统安全性。
               </p>
             </div>
           </section>
